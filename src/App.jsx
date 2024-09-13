@@ -5,12 +5,15 @@ import Login from "./pages/Login";
 
 function App() {
   return (
-  <BrowserRouter>
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
-    </Routes>    
-  </BrowserRouter>
+    <div className="bg-gray-900 h-full text-white">
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+      </Routes>
+    </BrowserRouter>
+  </div>
     );
 }
 
