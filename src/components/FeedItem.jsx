@@ -14,7 +14,7 @@ const FeedItem = () => {
         {/* START: 콘텐츠 영역 */}
         <div className="w-full">
           <div className="flex items-center">
-            <span className="font-bold">chutzrit</span>
+            <span className="font-bold">wandoo</span>
             {/* START: 수정, 삭제 버튼 영역 */}
             <div className="ml-auto flex gap-1">
               <button type="button" className="max-w-6 p-1">

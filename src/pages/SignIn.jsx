@@ -15,7 +15,7 @@ const SignIn = () => {
           <img src="./images/logo.svg" alt="churead로고" />
         </h1>
         <h3 className="text-red font-bold text-base py-6">
-          Churead에서 소통해보세요
+          Thread에서 소통해보세요
         </h3>
         {/* START: 폼 영역 */}
         <form id="login-form" className="text-center flex flex-col gap-2">
