@@ -2,9 +2,9 @@ import React from "react";
 import { RiHeartLine, RiPencilFill } from "react-icons/ri";
 import { FaTrash } from "react-icons/fa6";
 
-const FeedItem = ({ data, onDelete }) => {
+const FeedItem = ({ data, onEdit, onDelete }) => {
   // logic
-  const { userName, userProfileImage, churead, likeCount } = data;
+  const { userName, userProfileImage, thread, likeCount } = data;
 
   const handleDelete = () => {
     // confirm: 사용자에게 확인 | 취소 할수 있도록 선택하게 하는 알림창으로 boolean타입을 리턴함
@@ -30,7 +30,11 @@ const FeedItem = ({ data, onDelete }) => {
             <span className="font-bold">{userName}</span>
             {/* START: 수정, 삭제 버튼 영역 */}
             <div className="ml-auto flex gap-1">
-              <button type="button" className="max-w-6 p-1">
+              <button
+                type="button"
+                className="max-w-6 p-1"
+                onClick={() => onEdit(data)}
+              >
                 <RiPencilFill size={"18px"} />
               </button>
               <button
@@ -43,7 +47,7 @@ const FeedItem = ({ data, onDelete }) => {
             </div>
             {/* END: 수정, 삭제 버튼 영역 */}
           </div>
-          <p className="pt-1">{churead}</p>
+          <p className="pt-1">{thread}</p>
           {/* START: 좋아요 영역 */}
           <div className="flex items-center gap-1">
             <button type="button" className="text-churead-gray-400">

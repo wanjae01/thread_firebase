@@ -3,12 +3,13 @@ import Header from "../components/layout/Header";
 import Nav from "../components/layout/Nav";
 import FeedItem from "../components/FeedItem";
 import { initialFeedList } from "../data/response";
+import { useNavigate } from "react-router-dom";
 
-const Home = ({ churead }) => {
+const Home = ({ churead, editedItem, onEdit }) => {
   // logic
-  const [feedList, setFeedList] = useState(initialFeedList);
+  const history = useNavigate();
 
-  console.log("churead", churead);
+  const [feedList, setFeedList] = useState(initialFeedList);
 
   /**
    * 아이템 삭제하기
@@ -26,9 +27,13 @@ const Home = ({ churead }) => {
    * 7. filter함수로 리턴받은 배열을 feedList라는 state에 반영한다.
    */
 
+  const handleEdit = (data) => {
+    onEdit(data); // 부모에게 수정할 객체 아이템 넘겨주기
+    history("/edit"); // edit페이지로 이동
+  };
+
   const handleDelete = (selectedItem) => {
     const filterList = feedList.filter((item) => item.id !== selectedItem.id);
-    console.log("🚀 ~ filterList:", filterList);
     setFeedList(filterList);
   };
 
@@ -48,6 +53,17 @@ const Home = ({ churead }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (!editedItem) return;
+    //editedItem의 값이 있는경우
+    const resultFeedList = feedList.map((item) => {
+      if (item.id === editedItem.id) return editedItem;
+      return item;
+    });
+    setFeedList(resultFeedList);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editedItem]);
+
   // view
   return (
     <div className="h-full pt-20 pb-[74px] overflow-hidden">
@@ -59,7 +75,12 @@ const Home = ({ churead }) => {
           {/* START: 피드 영역 */}
           <ul>
             {feedList.map((feed) => (
-              <FeedItem key={feed.id} data={feed} onDelete={handleDelete} />
+              <FeedItem
+                key={feed.id}
+                data={feed}
+                onDelete={handleDelete}
+                onEdit={handleEdit}
+              />
             ))}
           </ul>
           {/* END: 피드 영역 */}
