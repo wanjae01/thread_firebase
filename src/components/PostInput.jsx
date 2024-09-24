@@ -1,7 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
-const PostInput = ({ defaultValue, userName, userProfileImage, onChange }) => {
+const PostInput = ({
+  defaultValue = "",
+  userName = "anonymous",
+  userProfileImage = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y",
+  onChange,
+}) => {
   // logic
+  const textareaRef = useRef(null)
+
   const [value, setValue] = useState(defaultValue);
 
   const hanldeChange = (event) => {
@@ -9,6 +16,14 @@ const PostInput = ({ defaultValue, userName, userProfileImage, onChange }) => {
     setValue(value);
     onChange(value);
   };
+
+  //진입 시 한번만 실행
+  useEffect(() => {
+    console.log("textareaRef", textareaRef);
+    textareaRef.current && textareaRef.current.focus()
+    const length = value.length;
+    textareaRef.current && textareaRef.current.setSelectionRange(length, length)
+  }, [value.length]);
 
   // view
   return (
@@ -27,8 +42,9 @@ const PostInput = ({ defaultValue, userName, userProfileImage, onChange }) => {
           <div className="pt-1 text-sm">
             <textarea
               rows={4}
-              placeholder="문구를 작성하세요"
+              placeholder="What's in your mind?"
               value={value}
+              ref={textareaRef}
               className="w-full placeholder-churead-gray-300 placeholder-opacity-60 text-churead-gray-400 bg-transparent outline-none resize-none"
               onChange={hanldeChange}
             />

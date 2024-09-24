@@ -5,7 +5,7 @@ import FeedItem from "../components/FeedItem";
 import { initialFeedList } from "../data/response";
 import { useNavigate } from "react-router-dom";
 
-const Home = ({ churead, editedItem, onEdit }) => {
+const Home = ({ thread, editedItem, onEdit }) => {
   // logic
   const history = useNavigate();
 
@@ -37,21 +37,32 @@ const Home = ({ churead, editedItem, onEdit }) => {
     setFeedList(filterList);
   };
 
+  const getData = () => {
+    fetch('https://jsonplaceholder.typicode.com/posts')
+      .then(response => response.json())
+      .then(json => console.log(json));
+  };
+
+
   // 진입시 딱 한번 실행
   useEffect(() => {
-    if (!churead) return;
+    if (!thread) return;
+    console.log("home", thread)
     const newFeed = {
       id: feedList.length + 1,
       userName: "anonymous",
       userProfileImage:
         "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y",
-      churead: churead,
+      thread: thread,
       likeCount: 0,
     };
     // feedList에 객체 추가
     setFeedList([newFeed, ...feedList]);
+    console.log("newFeed", newFeed)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {console.log("feedlist", feedList)}, [feedList])
 
   useEffect(() => {
     if (!editedItem) return;

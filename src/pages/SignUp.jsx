@@ -1,11 +1,33 @@
-import React from "react";
+import React, { useState } from "react";
 import InputField from "../components/InputField";
 import LoginButton from "../components/LoginButton";
 import { Link } from "react-router-dom";
 
-// TODO: 파일면 SignUp으로 바꾸기, path도 바꾸기
-const SignIn = () => {
+// TODO: 파일명 SignUp으로 바꾸기, path도 바꾸기
+const SignUp = () => {
   // logic
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  // const [formData, setFormData] = useState({
+  //   email: "",
+  //   password: "",
+  // });
+
+  const handleInputChange = (inputValue, field) => {
+    // field: 'email', 'password'
+    // const newFormData = { ...formData, [field]: inputValue };
+    // setFormData(newFormData);
+
+    if (field === "username") {
+      setUsername(inputValue);
+    } else if (field === "email") {
+      setEmail(inputValue);
+    } else {
+      setPassword(inputValue);
+    }
+  };
 
   // view
   return (
@@ -19,9 +41,9 @@ const SignIn = () => {
         </h3>
         {/* START: 폼 영역 */}
         <form id="login-form" className="text-center flex flex-col gap-2">
-          <InputField type="text" field="name" />
-          <InputField type="text" field="email" />
-          <InputField type="password" field="password" />
+          <InputField type="text" field="name" onChange={handleInputChange} />
+          <InputField type="text" field="email" onChange={handleInputChange}/>
+          <InputField type="password" field="password" onChange={handleInputChange}/>
           <LoginButton category="login" text="Create Account" />
         </form>
         {/* END: 폼 영역 */}
@@ -36,4 +58,4 @@ const SignIn = () => {
   );
 };
 
-export default SignIn;
+export default SignUp;

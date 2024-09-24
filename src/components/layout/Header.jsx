@@ -9,6 +9,9 @@ const Header = () => {
           <img src="./images/logo.svg" className="mx-auto h-16" alt="로고" />
         </Link>
       </h1>
+      <div className="absolute top-1/2 transform -translate-y-1/2 right-5 rounded-lg bg-white text-churead-black flex items-center px-2 text-sm">
+        <button type="button">로그아웃</button>
+      </div>
     </header>
   );
 };
