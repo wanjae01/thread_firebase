@@ -2,7 +2,7 @@ import React from "react";
 import { RiHeartLine, RiPencilFill } from "react-icons/ri";
 import { FaTrash } from "react-icons/fa6";
 
-const FeedItem = ({ data, onEdit, onDelete }) => {
+const FeedItem = ({ data, onEdit, onDelete, onLike }) => {
   // logic
   const { userName, userProfileImage, thread, likeCount } = data;
 
@@ -50,7 +50,7 @@ const FeedItem = ({ data, onEdit, onDelete }) => {
           <p className="pt-1">{thread}</p>
           {/* START: 좋아요 영역 */}
           <div className="flex items-center gap-1">
-            <button type="button" className="text-churead-gray-400">
+            <button type="button" className="text-churead-gray-400" onClick={() => onLike(data)}>
               <RiHeartLine />
               {/* <RiHeartFill color="red" /> */}
             </button>

@@ -4,14 +4,16 @@ import Nav from "../components/layout/Nav";
 import FeedItem from "../components/FeedItem";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase";
-import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
+import { collection, deleteDoc, doc, increment, onSnapshot, orderBy, query, updateDoc } from "firebase/firestore";
+
+
 
 const Home = ({ editedItem, onEdit }) => {
   // logic
   const history = useNavigate();
 
   const [feedList, setFeedList] = useState([]);
-
+  const user = auth.currentUser
   // const delay = (ms) => {
   //   return new Promise((res) => setTimeout(res, ms));
   // };
@@ -38,9 +40,17 @@ const Home = ({ editedItem, onEdit }) => {
     history("/edit"); // edit페이지로 이동
   };
 
-  const handleDelete = (selectedItem) => {
-    const filterList = feedList.filter((item) => item.id !== selectedItem.id);
-    setFeedList(filterList);
+  const handleDelete = async (selectedItem) => {
+    // const filterList = feedList.filter((item) => item.id !== selectedItem.id);
+    // setFeedList(filterList);
+    if (selectedItem.userId !== user.uid) return;
+
+    try {
+      //데이터베이스에게 삭제 요청
+      await deleteDoc(doc(db, "threads", selectedItem.id))
+    } catch (error) {
+      console.error(error)
+    }
   };
 
   const handleLogout = async () => {
@@ -77,7 +87,10 @@ const Home = ({ editedItem, onEdit }) => {
     return unsubscribe
   };
 
-  
+  const handleLike = async (selectedItem) => {
+    //firebase에게 라이크 숫자 업데이트 요구(LikeCount 값 1 증가)
+    await updateDoc(doc(db, "threads", selectedItem.id), {likeCount: increment(1)} )
+  }
 
   // 진입시 딱 한번 실행
   useEffect(() => {
@@ -115,6 +128,7 @@ const Home = ({ editedItem, onEdit }) => {
                 data={feed}
                 onDelete={handleDelete}
                 onEdit={handleEdit}
+                onLike={handleLike}
               />
             ))}
           </ul>
