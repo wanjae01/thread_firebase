@@ -1,9 +1,13 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PostInput from "../components/PostInput";
+import { auth, db } from "../firebase";
+import { addDoc, collection } from "firebase/firestore";
 
 const Post = ({ onPost }) => {
   // logic
+  const user = auth.currentUser 
+
   const history = useNavigate();
   const [thread, setThread] = useState("");
 
@@ -11,7 +15,7 @@ const Post = ({ onPost }) => {
     setThread(value);
   };
 
-  const handlePost = (event) => {
+  const handlePost = async (event) => {
     event.preventDefault(); // 폼 제출시 새로고침 방지 메소드
 
     // 1. post 글쓸때 불필요한 공백 제거하기(trim)
@@ -26,7 +30,24 @@ const Post = ({ onPost }) => {
     }
 
     //빈 스트링이 아닌 경우
-    onPost(thread); // 부모에게 thread입력값 넘겨주기
+
+    //firebase에 아이템 추가
+    try {
+      const newFeed = {
+        userId: user.uid,
+        userName: user.displayName || "Anonymous",
+        userProfileImage: user.photoURL || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y",
+        thread: thread,
+        likeCount: 0,
+        createAt: Date.now(),
+      };
+      await addDoc(collection(db, "threads"), newFeed);
+
+    } catch(error) {
+      console.error(error)
+    }
+
+    
     history("/"); // home화면으로 이동
   };
 
@@ -46,7 +67,8 @@ const Post = ({ onPost }) => {
         <div className="h-full overflow-auto">
           <form id="post" onSubmit={handlePost}>
             {/* START: 사용자 입력 영역 */}
-            <PostInput onChange={handleChange} />
+            <PostInput userName={user.displayName}
+            userProfileImage={user.photoURL || undefined} onChange={handleChange} />
             {/* END: 사용자 입력 영역 */}
             {/* START: 게시 버튼 영역 */}
             <div className="w-full max-w-[572px] flex items-center fixed bottom-0 lef p-6">

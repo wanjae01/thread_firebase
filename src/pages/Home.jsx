@@ -2,14 +2,19 @@ import React, { useEffect, useState } from "react";
 import Header from "../components/layout/Header";
 import Nav from "../components/layout/Nav";
 import FeedItem from "../components/FeedItem";
-import { initialFeedList } from "../data/response";
 import { useNavigate } from "react-router-dom";
+import { auth, db } from "../firebase";
+import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 
-const Home = ({ thread, editedItem, onEdit }) => {
+const Home = ({ editedItem, onEdit }) => {
   // logic
   const history = useNavigate();
 
-  const [feedList, setFeedList] = useState(initialFeedList);
+  const [feedList, setFeedList] = useState([]);
+
+  // const delay = (ms) => {
+  //   return new Promise((res) => setTimeout(res, ms));
+  // };
 
   /**
    * 아이템 삭제하기
@@ -28,6 +33,7 @@ const Home = ({ thread, editedItem, onEdit }) => {
    */
 
   const handleEdit = (data) => {
+    // 인자, argument
     onEdit(data); // 부모에게 수정할 객체 아이템 넘겨주기
     history("/edit"); // edit페이지로 이동
   };
@@ -37,32 +43,50 @@ const Home = ({ thread, editedItem, onEdit }) => {
     setFeedList(filterList);
   };
 
-  const getData = () => {
-    fetch('https://jsonplaceholder.typicode.com/posts')
-      .then(response => response.json())
-      .then(json => console.log(json));
+  const handleLogout = async () => {
+    const ok = window.confirm("정말 로그아웃 하시겠습니까?");
+
+    if (!ok) return; // 아니요 선택시 다음 줄 실행안함
+
+    // TODO: 1. 파이어베이스에게 로그아웃 요청
+    try {
+      // await signOut(auth)
+      await auth.signOut();
+    } catch (error) {
+      console.error(error);
+    }
+
+    // TODO: 2. 로그인 화면으로 리다이렉트
+    history("/login");
   };
 
+  const getLiveData = () => {
+    const collectionRef = collection(db, "threads");
+
+    const threadQuery = query(collectionRef, orderBy("createAt", "desc"));
+    // 실시간으로 데이터 가져오기
+    const unsubscribe = onSnapshot(threadQuery, (snapshot) => {
+      console.log("snap", snapshot)
+      const datas = snapshot.docs.map((item) => {
+        console.log("item=>", item.data());
+        return { id: item.id, ...item.data() };
+      });
+      // console.log("datas", datas);
+      setFeedList(datas);
+    });
+    return unsubscribe
+  };
+
+  
 
   // 진입시 딱 한번 실행
   useEffect(() => {
-    if (!thread) return;
-    console.log("home", thread)
-    const newFeed = {
-      id: feedList.length + 1,
-      userName: "anonymous",
-      userProfileImage:
-        "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y",
-      thread: thread,
-      likeCount: 0,
-    };
-    // feedList에 객체 추가
-    setFeedList([newFeed, ...feedList]);
-    console.log("newFeed", newFeed)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+   const unsubscribe = getLiveData();
 
-  useEffect(() => {console.log("feedlist", feedList)}, [feedList])
+    return () => {
+      unsubscribe && unsubscribe();
+    }
+  }, []);
 
   useEffect(() => {
     if (!editedItem) return;
@@ -79,7 +103,7 @@ const Home = ({ thread, editedItem, onEdit }) => {
   return (
     <div className="h-full pt-20 pb-[74px] overflow-hidden">
       {/* START: 헤더 영역 */}
-      <Header />
+      <Header onLogout={handleLogout} />
       {/* END: 헤더 영역 */}
       <main className="h-full overflow-auto">
         <div>
