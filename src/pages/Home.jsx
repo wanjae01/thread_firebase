@@ -4,16 +4,36 @@ import Nav from "../components/layout/Nav";
 import FeedItem from "../components/FeedItem";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase";
-import { collection, deleteDoc, doc, increment, onSnapshot, orderBy, query, updateDoc } from "firebase/firestore";
-
-
+import {
+  collection,
+  deleteDoc,
+  doc,
+  increment,
+  onSnapshot,
+  orderBy,
+  query,
+  updateDoc,
+} from "firebase/firestore";
 
 const Home = ({ editedItem, onEdit }) => {
   // logic
+  /**
+   * 피드 글 작성자인 경우만 edit, delete 버튼 보여주기
+   * 1. 로그인한 사용자의 id값 가져오기
+   * 2. 게시글의 작성자 id값 가져오기 (userId)
+   * 3. 두 id값을 비교하기
+   * 4. 비교한 값이 같을경우(true): 아이콘 보여주기
+   * 5. 비교한 값이 다를경우(fale): 아이콘 숨기기
+   */
+
+  const user = auth.currentUser; // User | null
+
   const history = useNavigate();
 
+  let unsubscribe = null;
+
   const [feedList, setFeedList] = useState([]);
-  const user = auth.currentUser
+
   // const delay = (ms) => {
   //   return new Promise((res) => setTimeout(res, ms));
   // };
@@ -41,16 +61,18 @@ const Home = ({ editedItem, onEdit }) => {
   };
 
   const handleDelete = async (selectedItem) => {
-    // const filterList = feedList.filter((item) => item.id !== selectedItem.id);
-    // setFeedList(filterList);
+    // 글 작성자와 현재 로그인 유저가 다르면 실행안함
     if (selectedItem.userId !== user.uid) return;
 
     try {
-      //데이터베이스에게 삭제 요청
-      await deleteDoc(doc(db, "threads", selectedItem.id))
+      // 파이어베이스에게 삭제 요청
+      await deleteDoc(doc(db, "threads", selectedItem.id));
     } catch (error) {
-      console.error(error)
+      console.error(error);
     }
+
+    console.log("🚀 ~ selectedItem:", selectedItem);
+    console.log("🚀 ~ user:", user);
   };
 
   const handleLogout = async () => {
@@ -58,7 +80,7 @@ const Home = ({ editedItem, onEdit }) => {
 
     if (!ok) return; // 아니요 선택시 다음 줄 실행안함
 
-    // TODO: 1. 파이어베이스에게 로그아웃 요청
+    // 1. 파이어베이스에게 로그아웃 요청
     try {
       // await signOut(auth)
       await auth.signOut();
@@ -66,7 +88,7 @@ const Home = ({ editedItem, onEdit }) => {
       console.error(error);
     }
 
-    // TODO: 2. 로그인 화면으로 리다이렉트
+    // 2. 로그인 화면으로 리다이렉트
     history("/login");
   };
 
@@ -75,30 +97,34 @@ const Home = ({ editedItem, onEdit }) => {
 
     const threadQuery = query(collectionRef, orderBy("createAt", "desc"));
     // 실시간으로 데이터 가져오기
-    const unsubscribe = onSnapshot(threadQuery, (snapshot) => {
-      console.log("snap", snapshot)
+    unsubscribe = onSnapshot(threadQuery, (snapshot) => {
       const datas = snapshot.docs.map((item) => {
-        console.log("item=>", item.data());
-        return { id: item.id, ...item.data() };
+        const data = item.data();
+        return { id: item.id, ...data, isAuthor: user.uid === data.userId };
       });
-      // console.log("datas", datas);
+      console.log("🚀 ~ datas ~ datas:", datas);
+
       setFeedList(datas);
     });
-    return unsubscribe
   };
 
   const handleLike = async (selectedItem) => {
-    //firebase에게 라이크 숫자 업데이트 요구(LikeCount 값 1 증가)
-    await updateDoc(doc(db, "threads", selectedItem.id), {likeCount: increment(1)} )
-  }
+    console.log("heart click");
+    // 파이어베이스에게 likeCount의 값을 1씩 증가시키기
+    await updateDoc(doc(db, "threads", selectedItem.id), {
+      likeCount: increment(1),
+    });
+  };
 
   // 진입시 딱 한번 실행
   useEffect(() => {
-   const unsubscribe = getLiveData();
-
+    getLiveData();
     return () => {
+      // 실시간 데이터 감시 끄기
       unsubscribe && unsubscribe();
-    }
+      console.log("🚀 ~ unsubscribe:", unsubscribe);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -126,8 +152,8 @@ const Home = ({ editedItem, onEdit }) => {
               <FeedItem
                 key={feed.id}
                 data={feed}
-                onDelete={handleDelete}
                 onEdit={handleEdit}
+                onDelete={handleDelete}
                 onLike={handleLike}
               />
             ))}
